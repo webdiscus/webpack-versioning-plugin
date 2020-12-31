@@ -1,0 +1,6 @@
+@import "/assets/component1.css";
+@import url("//assets/component2.css");
+
+body {
+  background: red;
+}

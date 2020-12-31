@@ -1,0 +1,1 @@
+new Worker("/assets/worker1.eea8e65dc2c69cc7ace4.js").postMessage(["Message posted to worker."]),new Worker("/assets/worker2.eea8e65dc2c69cc7ace4.js").postMessage(["Message posted to worker."]);
