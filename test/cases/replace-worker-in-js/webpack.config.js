@@ -1,4 +1,7 @@
+const path = require('path');
 const WebpackVersioningPlugin = require('../../../src');
+
+const publicPath =  '/assets/';
 
 module.exports = {
   mode: 'production',
@@ -16,11 +19,11 @@ module.exports = {
   plugins: [
     new WebpackVersioningPlugin({
       enabled: true,
-      publicPath: '/assets/',
+      publicPath: publicPath,
       fileName: '.assets-manifest.json',
-      verbose: true,
+      verbose: false,
       exclude: [
-          '/assets/script-excluded.js',
+          path.join(publicPath, 'script-excluded.js'),
       ],
     }),
   ],

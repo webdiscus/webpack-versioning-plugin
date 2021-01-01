@@ -2,12 +2,16 @@
 
 # [webpack-versioning-plugin](https://www.npmjs.com/package/webpack-versioning-plugin)
 
-The plugin generates an asset manifest and replaces the original file names with hashed version in HTML and assets.
+The plugin generates an asset manifest and replaces the original file names with hashed version in HTML and assets.<br>
+The plugin work in **Webpack 5**.
 
 ## Features
 - generates assets manifest file as JSON, same as other similar plugins
 - replace original file names to hashed version in HTML, CSS, JS
 - exclude hashing of file names, defined in webpack config entry
+- user hook at excluding a file
+- user hook at hashing of file name
+- user hook at saving manifest file where manifest data can be modified
 
 ## Install
 
@@ -20,21 +24,29 @@ Optional, if you use a template by webpack, install the package `npm install htm
 ## Usage
 
 The example of an application structure.
-The web root path in this case is `public/`.
+
+| description  | variable in<br>webpack config| absolute path |
+|--------------|---------|-------|
+|the application base path | `basePath` | `/srv/vhost/sample.com/`
+|the web root path |`webRootPath` | `/srv/vhost/sample.com/public/`
+|the webpack output path | `outputPath` | `/srv/vhost/sample.com/public/assets/`
+|the application source path | | `/srv/vhost/sample.com/src/`
+
+The example of file structure in the application path `/srv/vhost/sample.com/`:
 
 ```
-/srv/vhost/sample.com/
-            |- /public/
-            |- /src/
-            |     |-- index.html
-            |     |-- script.js
-            |     |-- script-worker.js
-            |     |-- style.css
-            |     |-- style-component.css
-            |- webpack.config.js
+.
+├--public/
+├--src/
+|  ├--index.html
+|  ├--script.js
+|  ├--script-worker.js
+|  ├--style.css
+|  └--style-component.css
+└--webpack.config.js
 ```
 
-Create a webpack.config.js file
+The example of a webpack.config.js file:
 
 ```js
 const path = require('path');
@@ -54,7 +66,6 @@ const outputPath = path.join(webRootPath, publicPath);
 // The minimal required options of plugin.
 const webpackVersioningOptions = {
     publicPath: publicPath,
-    ...
 };
 
 module.exports  = {
@@ -91,12 +102,8 @@ module.exports  = {
             {
                 test: /\.css$/,
                 use: [
-                    {
-                        loader: MiniCssExtractPlugin.loader,
-                    },
-                    {
-                        loader: 'css-loader',
-                    },
+                    MiniCssExtractPlugin.loader,
+                    'css-loader',
                 ]
             }
         ]
@@ -172,21 +179,24 @@ const myWorker = new Worker("/assets/script-worker.js");
 myWorker.postMessage(["Message posted to worker."]);
 ```
 
-The webpack compile assets and template to `public/`:
+The webpack compile template to the  web root directory `/srv/vhost/sample.com/public/` and assets to the output directory `/srv/vhost/sample.com/public/assets/`.
+
+An example of the structure of compiled files: 
 ```
-/srv/vhost/sample.com/
-            |- /public/
-            |  |  |- /assets/
-            |  |  |-- .assets-manifest.json
-            |  |  |-- script.xxx.js
-            |  |  |-- script-worker.xxx.js
-            |  |  |-- style.xxx.css
-            |  |  |-- style-component.xxx.css
-            |  |-- index.html
-            |- /src/
+.
+├--public/
+|  ├--assets/
+|  |  ├--.assets-manifest.json
+|  |  ├--script.xxx.js
+|  |  ├--script-worker.xxx.js
+|  |  ├--style.xxx.css
+|  |  └--style-component.xxx.css
+|  └--index.html
+└--src/
+
 ```
 
-Created `./public/assets/.assets-manifest.json`
+Generated assets manifest file `./public/assets/.assets-manifest.json`:
 ```json
 {
   "/assets/script.js": "/assets/script.666f2b8847021ccc7608.js",
@@ -196,7 +206,7 @@ Created `./public/assets/.assets-manifest.json`
 }
 ```
 
-Compiled `./public/index.html`
+Compiled template with replaced versioned files `./public/index.html`:
 
 ```html
 <html>
@@ -210,7 +220,7 @@ Compiled `./public/index.html`
 </html>
 ```
 
-Compiled `./public/assets/style.xxx.css`
+Compiled style with replaced versioned file `./public/assets/style.xxx.css`:
 
 ```css
 @import url("//assets/style-component.xxx.css");
@@ -220,23 +230,23 @@ body {
 }
 ```
 
-Compiled `./public/assets/script.xxx.js`
+Compiled script with replaced versioned file `./public/assets/script.xxx.js`:
 
 ```js
 const myWorker = new Worker("/assets/script-worker.xxx.js");
 myWorker.postMessage(["Message posted to worker."]);
 ```
 
-### Options
+## Options
 
 ### `enabled`
 Type: `Boolean`<br>
 Default: `true`<br>
+**Note:** if is `false` then manifest file will be generated as empty json object `{}`.
 
 In `development` mode not need generates a manifest file and compile assets with versioned names.
-In this case should be `false`.
+In this case should be `false`.<br>
 The option can be defined as: `enabled: process.env.NODE_ENV === 'production'`.<br>
-**Note:** if is `faslse` then manifest file will be generated as empty json object `{}`.
 
 ### `publicPath`
 Type: `String`<br>
@@ -250,7 +260,7 @@ This is relative path by `web root` directory.
 Type: `String`<br>
 Default: `.assets-manifest.json`<br>
 **Note:** the file name should begin with `.` to prevent access via URL `https://example.com/assets/.assets-manifest.json`, e.g. from web crawler or indexer.
-?he file name should be different from `manifest.json` to prevent confusion when working with [Web app manifests](https://developer.mozilla.org/en-US/docs/Web/Manifest) or [WebExtension manifests](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json).
+The file name should be different from `manifest.json` to prevent confusion when working with [Web app manifests](https://developer.mozilla.org/en-US/docs/Web/Manifest) or [WebExtension manifests](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json).
 
 The file name to save generated assets manifest as JSON object.<br>
 Defaults, the file name will be saved in `publicPath`. An absolute path is possible.<br>
@@ -291,46 +301,46 @@ Enable/disable output logging information. Useful by `development` mode.
 ### Hooks
 Type: `Object<Function>`<br>
 Default:<br>
-```json
+```text
 hooks: {
     exclude: (compilation, file, assetInfo) => true,
     contentHash: (compilation, file, assetInfo) => true,
-    done: (manifestFile, manifestData) => manifestData
+    done: (file, data) => data
 }
 ```
 
-Hook `exclude(compilation, file, assetInfo): Boolean` will be called before exclude an entry file.<br>
+The hook `exclude(compilation, file, assetInfo): Boolean` will be called before exclude an entry file.<br>
 Arguments:
-```
-@param {Object} compilation The compilation object of webpack.
-@param {String} file The file name of entry.
-@param {Object} assetInfo The information from manifest.
-@return boolean If return false, then not exclude the file.
-```
 
-Hook `contentHash(compilation, file, assetInfo): Boolean` will be called before add a hashed file name to manifest.<br>
-Arguments:
-```
-@param {Object} compilation The compilation object of webpack.
-@param {String} file The file name of entry.
-@param {Object} assetInfo The information from manifest.
-@return boolean If return false, then not add the file to manifest.
-```
+- `{Object} compilation` The compilation object of webpack.
+- `{String} file` The file name of entry.
+- `{Object} assetInfo` The information from manifest.
 
-Hook `done(manifestFile, manifestData): Boolean | Object ` will be called before write the manifest to file.<br>
+Return: `{Boolean}` If return `false` then not exclude the file.
+
+
+The hook `contentHash(compilation, file, assetInfo): Boolean` will be called before add a hashed file name to manifest.<br>
 Arguments:
-```
-@param {String} manifestFile The absolute path to manifest file.
-@param {Object} manifestData The JSON data manifest. Yor can manipulate the data (add, remove) and will be saved returned data. 
-@return boolean | Object If return false, then not write the file, overwise will be writed returned JSON data to manifest file.
-```
+
+- `{Object} compilation` The compilation object of webpack.
+- `{String} file` The file name of entry.
+- `{Object} assetInfo` The information from manifest.
+
+Return: `{Boolean}` If return `false` then not add the file to manifest.
+
+The hook `done(file, data): Boolean | Object` will be called before write the manifest to file.<br>
+Arguments:
+
+- `{String} file` The absolute path to manifest file.
+- `{Object} data` The `JSON` data of asset manifest. You can manipulate with data (add, remove) and returned data will be saved.
+
+Return: `{Boolean | Object}` If return `false` then not save the file, if return `JSON` then returned data will be saved to manifest file.
 
 The argument object `assetInfo`:
-```
-@param {String} source The original file name, that used in HTML, CSS, JS, e.g. '/assets/script.js'
-@param {String} target The versioned file name, e.g. '/assets/script.666f2b8847021ccc7608.js'
-@param {String} contentHash The hash part of versioned file name, e.g. 666f2b8847021ccc7608
-```
+
+- `{String} source` The original file name that used in HTML, CSS, JS, e.g. `/assets/script.js`.
+- `{String} target` The versioned file name, e.g. `/assets/script.666f2b8847021ccc7608.js`.
+- `{String} contentHash` The hash part of versioned file name, e.g. `666f2b8847021ccc7608`.
 
 ## P.S.
 If you have any useful ideas to improve the plugin please let me know :-)

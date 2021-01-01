@@ -1,6 +1,6 @@
 {
   "name": "webpack-versioning-plugin",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "The webpack plugin for generating asset manifest and replaces the original file names with hashed version in HTML and assets.",
   "keywords": [
     "webpack",
@@ -49,9 +49,11 @@
   },
   "dependencies": {},
   "devDependencies": {
+    "@babel/plugin-transform-modules-commonjs": "^7.12.1",
     "@types/jest": "^26.0.19",
     "css-loader": "^5.0.1",
     "fs": "^0.0.1-security",
+    "html-webpack-plugin": "^4.5.0",
     "jest": "^26.6.3",
     "mini-css-extract-plugin": "^1.3.3",
     "rimraf": "^3.0.2",
