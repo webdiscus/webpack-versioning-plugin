@@ -1,6 +1,8 @@
 [![npm version](https://badge.fury.io/js/webpack-versioning-plugin.svg)](https://www.npmjs.com/package/webpack-versioning-plugin)
 
-# [webpack-versioning-plugin](https://www.npmjs.com/package/webpack-versioning-plugin)
+# [webpack-versioning-plugin](https://www.npmjs.com/package/webpack-versioning-plugin) is DEPRECATED
+
+> ## Use the NEW powerful [html-bundler-webpack-plugin](https://github.com/webdiscus/html-bundler-webpack-plugin)
 
 The plugin generates an asset manifest and replaces the original file names with hashed version in HTML and assets.<br>
 The plugin work in **Webpack 5**.
